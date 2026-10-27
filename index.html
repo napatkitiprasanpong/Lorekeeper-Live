@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111116">
+  <title>Lorekeeper Live — Stream Control</title>
+  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="improvements.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="rail">
+      <a class="brand-mark" href="index.html" aria-label="Lorekeeper home"><span>LK</span></a>
+      <button class="rail-button active" title="Stream desk" aria-label="Stream desk">◫</button>
+      <button class="rail-button" title="Lore archive" aria-label="Lore archive" data-jump="archive">▤</button>
+      <button class="rail-button" title="Tonight's lore" aria-label="Tonight's lore" data-jump="recap">✧</button>
+      <div class="rail-bottom"><span class="avatar">F</span></div>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div class="wordmark"><span class="wordmark-icon">✦</span><span>LOREKEEPER<span class="wordmark-live">LIVE</span></span></div>
+        <div class="topbar-right"><span class="demo-pill"><i></i> DEMO MODE</span><button class="icon-button" title="Settings are coming soon" aria-label="Settings">⚙</button></div>
+      </header>
+
+      <section class="page-heading">
+        <div><div class="eyebrow">STREAM CONTROL ROOM <span class="eyebrow-line"></span> OVERWATCH</div><h1>Good evening, <span>Flat.</span></h1><p>Chat is writing tonight's story. Pick the moments worth keeping.</p></div>
+        <button class="button button-quiet" id="reset-demo">↻ <span>Reset demo</span></button>
+      </section>
+
+      <section class="stat-row" aria-label="Stream stats">
+        <article class="stat-card"><div class="stat-label">CANON MOMENTS</div><div class="stat-value" id="stat-canon">—</div><div class="stat-foot"><span class="stat-spark">↗</span> saved to channel lore</div></article>
+        <article class="stat-card"><div class="stat-label">NEEDS YOUR EYES</div><div class="stat-value" id="stat-pending">—</div><div class="stat-foot">captured frames to describe</div></article>
+        <article class="stat-card"><div class="stat-label">MOST FEATURED HERO</div><div class="stat-value stat-hero" id="stat-hero">—</div><div class="stat-foot">from the lore archive</div></article>
+        <article class="stat-card demo-stat"><div class="stat-label">STREAM CONNECTION</div><div class="stat-value">DEMO ONLY</div><div class="stat-foot">Twitch authorization not configured</div></article>
+      </section>
+
+      <section class="main-grid">
+        <div class="column-stack">
+          <article class="panel queue-panel" id="queue">
+            <div class="panel-heading"><div><div class="eyebrow">LOCAL SCREEN CAPTURES</div><h2>Moment review <span class="count-badge" id="queue-count">0</span></h2></div><span class="panel-live"><i></i> PRIVATE TO THIS DEVICE</span></div>
+            <div class="queue-list" id="queue-list"></div>
+            <div class="empty-state hidden" id="queue-empty"><span>▧</span><strong>No captures yet.</strong><p>Share the Flats source video and capture a frame to start a lore card.</p></div>
+          </article>
+
+          <article class="panel archive-panel" id="archive">
+            <div class="panel-heading archive-heading"><div><div class="eyebrow">THE CHANNEL'S MEMORY</div><h2>Lore archive</h2></div><label class="search-box"><span>⌕</span><input id="search-input" type="search" placeholder="Find a moment..." aria-label="Search lore"></label></div>
+            <div class="tag-row" id="tag-row"></div>
+            <div class="lore-grid" id="lore-grid"></div>
+            <div class="empty-state hidden" id="archive-empty"><span>⌕</span><strong>No lore found.</strong><p>Try another phrase or tag.</p></div>
+          </article>
+        </div>
+
+        <div class="column-stack right-column">
+          <article class="panel screen-panel">
+            <div class="panel-heading"><div><div class="eyebrow">SCREEN-ONLY MODE</div><h2>Read the moment <span class="demo-label">NO CHAT ACCESS</span></h2></div><span class="screen-state" id="screen-state">NOT SHARING</span></div>
+            <div class="screen-viewport" id="screen-viewport"><video id="screen-video" autoplay muted playsinline></video><div class="screen-placeholder" id="screen-placeholder"><span>▧</span><strong>Capture what’s on screen</strong><p>Share a browser tab or game window. The frame becomes visual evidence for a lore card; add the context yourself. No Twitch login or chat connection.</p></div><div class="screen-corner">SCREEN INPUT · LOCAL ONLY</div></div>
+            <div class="screen-controls"><button class="button button-primary" id="share-screen">Share a window</button><button class="button button-quiet" id="stop-screen" disabled>Stop sharing</button><button class="button button-capture" id="capture-moment" disabled>✦ Capture moment</button></div>
+            <div class="screen-note" id="screen-note">For the demo, open the public Flats video in another tab, then share that tab here.</div>
+            <a class="source-video-link" href="https://www.youtube.com/watch?v=zKbeWzSP3N8" target="_blank" rel="noopener">▶ Open sample source: “I spectated bronze Overwatch and saw the best Doomfist” ↗</a>
+          </article>
+
+          <article class="panel on-stream-panel">
+            <div class="panel-heading"><div><div class="eyebrow">LIVE OVERLAY PREVIEW</div><h2>On stream</h2></div><span class="overlay-status" id="overlay-status">STANDBY</span></div>
+            <div class="stream-preview" id="stream-preview"><div class="preview-game"><span class="preview-map">WATCHPOINT: GIBRALTAR</span><span class="preview-hud">TEAM 1 <b>VS</b> TEAM 2</span><div class="preview-reticle">+</div><span class="preview-caption">THE LORE IS LOADING...</span></div><div class="preview-card" id="preview-card"></div><span class="preview-label">OBS BROWSER SOURCE PREVIEW</span></div>
+            <div class="overlay-footer"><span id="featured-title">No moment featured</span><div class="overlay-links"><button class="feature-button" id="hide-overlay">HIDE CARD</button><a href="overlay.html" target="_blank" rel="noopener">Open overlay ↗</a></div></div>
+          </article>
+
+          <article class="panel recap-panel" id="recap">
+            <div class="recap-top"><div><div class="eyebrow">THE STORY SO FAR</div><h2>Tonight's lore</h2></div><span class="recap-spark">✧</span></div>
+            <p class="recap-copy">A little screen evidence. A little context. Here’s what made the archive.</p>
+            <div class="recap-chips" id="recap-chips"></div>
+            <button class="button button-recap" id="recap-button">View session recap <span>→</span></button>
+          </article>
+        </div>
+      </section>
+      <footer class="footer"><span>LOREKEEPER LIVE <b>·</b> A COMMUNITY MEMORY ENGINE</span><span>BUILT FOR THE MOMENTS BETWEEN THE MOMENTS</span></footer>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="modal-backdrop hidden" id="modal-backdrop"><section class="recap-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button class="modal-close" id="modal-close" aria-label="Close recap">×</button><div class="eyebrow">SESSION RECAP · TONIGHT</div><h2 id="modal-title">The moments that made it</h2><p class="modal-intro">Screen evidence, public sources, and human context. This is tonight's canon.</p><div id="modal-lore-list"></div><button class="button button-primary" id="modal-done">Back to stream desk</button></section></div>
+  <div class="modal-backdrop hidden" id="moment-editor-backdrop"><form class="recap-modal moment-editor" id="moment-editor" role="dialog" aria-modal="true" aria-labelledby="moment-editor-title"><button type="button" class="modal-close" id="editor-close" aria-label="Close editor">×</button><div class="eyebrow" id="editor-eyebrow">MOMENT REVIEW</div><h2 id="moment-editor-title">Make this moment canon</h2><p class="modal-intro" id="editor-source"></p><label>Card title<input id="editor-title" maxlength="80" required></label><label>What’s happening?<textarea id="editor-description" rows="3" maxlength="240" required></textarea></label><div class="editor-row"><label>Hero<input id="editor-hero" maxlength="24" placeholder="e.g. D.Va"></label><label>Map<input id="editor-map" maxlength="32" placeholder="e.g. Ilios Well"></label></div><div class="editor-row"><label>Video time<input id="editor-timestamp" maxlength="12" placeholder="e.g. 01:24:32"></label><label>Public source URL<input id="editor-clip" type="url" placeholder="YouTube or Twitch link"></label></div><label>Tags, comma separated<input id="editor-tags" maxlength="90" placeholder="CLUTCH, SCREEN MOMENT"></label><div class="editor-actions"><button type="button" class="button button-quiet" id="editor-cancel">Cancel</button><button type="submit" class="button button-primary" id="editor-save">Save & show on stream</button></div></form></div>
+  <script src="app.js"></script>
+</body>
+</html>

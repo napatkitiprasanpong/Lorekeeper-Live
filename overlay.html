@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lorekeeper Live — OBS Overlay</title>
+  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="improvements.css">
+</head>
+<body class="overlay-page">
+  <main class="overlay-stage" id="overlay-stage">
+    <div class="overlay-card" id="overlay-card">
+      <div class="overlay-card-top"><span class="overlay-brand"><span>✦</span> CHANNEL LORE</span><span class="overlay-live-dot"></span></div>
+      <div class="overlay-tag" id="overlay-tag">NEW CANON</div>
+      <h1 id="overlay-title">The moment chat won't forget</h1>
+      <p id="overlay-description">Feature a lore card from the streamer dashboard to bring this moment back.</p>
+      <img class="overlay-snapshot hidden" id="overlay-snapshot" alt="Captured gameplay frame">
+      <div class="overlay-meta"><span id="overlay-context">OVERWATCH</span><span id="overlay-origin">PUBLIC SOURCE</span></div>
+    </div>
+    <div class="overlay-empty" id="overlay-empty"><span>✦</span><b>LOREKEEPER LIVE</b><small>Waiting for the next canon moment</small></div>
+  </main>
+  <script>
+    (() => {
+    const KEY = 'lorekeeper-live-v2';
+      const $ = (id) => document.getElementById(id);
+      const fallback = { featuredId: null, cards: [] };
+      const show = () => {
+        let state = fallback;
+        try { state = JSON.parse(localStorage.getItem(KEY)) || fallback; } catch (_) {}
+        const card = (state.cards || []).find((item) => item.id === state.featuredId);
+        $('overlay-card').classList.toggle('visible', !!card);
+        $('overlay-empty').classList.toggle('visible', !card);
+        if (!card) return;
+        $('overlay-tag').textContent = (card.tags?.[0] || 'NEW CANON').toUpperCase();
+        $('overlay-title').textContent = card.title;
+        $('overlay-description').textContent = card.description;
+        $('overlay-context').textContent = [card.hero, card.map, card.timestamp].filter(Boolean).join(' · ').toUpperCase() || 'OVERWATCH';
+        $('overlay-origin').textContent = card.snapshot ? 'SCREEN CAPTURE' : 'PUBLIC SOURCE';
+        $('overlay-snapshot').src = card.snapshot || '';
+        $('overlay-snapshot').classList.toggle('hidden', !card.snapshot);
+      };
+      window.addEventListener('storage', show);
+      window.addEventListener('focus', show);
+      setInterval(show, 900);
+      show();
+    })();
+  </script>
+</body>
+</html>
