@@ -51,6 +51,11 @@ The seed card provides a sourced starting point even when you do not want to cap
 - `server.mjs` — dependency-free local server for screen capture and OBS preview
 - `package.json` — project metadata and start command
 - `.gitignore` — local-only files excluded from Git
+- `LICENSE` — MIT License
+
+## License
+
+This project is released under the MIT License. See [`LICENSE`](LICENSE) for the full terms.
 
 ## Put it on GitHub
 
