@@ -56,8 +56,3 @@ The seed card provides a sourced starting point even when you do not want to cap
 ## License
 
 This project is released under the MIT License. See [`LICENSE`](LICENSE) for the full terms.
-
-## Put it on GitHub
-
-Create a new repository on GitHub, then upload these project files or push the folder with Git. Keep this repository public only if you are comfortable sharing its source code. The app has no user secrets or configuration files to commit; screen captures are saved in the browser’s local storage and are not part of this folder.
-
