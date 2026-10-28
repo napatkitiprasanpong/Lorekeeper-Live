@@ -1,0 +1,268 @@
+const fs = require('fs');
+const { execSync } = require('child_process');
+
+const ROOT = 'C:\\Users\\leslie\\Documents\\GitHub\\Lorekeeper-Live';
+const OUT = `${ROOT}\\brag-output`;
+const WORK = `${OUT}\\work`;
+const FRAMES = `${WORK}\\frames`;
+
+fs.mkdirSync(FRAMES, { recursive: true });
+
+// Inline the project's real CSS so the video reuses the actual visual identity.
+const appCSS = fs.readFileSync(`${ROOT}\\app.css`, 'utf8');
+const impCSS = fs.readFileSync(`${ROOT}\\improvements.css`, 'utf8');
+
+const CSS = `<style>${appCSS}${impCSS}</style>`;
+
+const HTML = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lorekeeper Live — brag video</title>
+${CSS}
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1920px; height: 1080px; margin: 0; background: #111116; color: #f3f0f3; font-family: var(--body); overflow: hidden; }
+#stage { width: 1920px; height: 1080px; position: relative; background: #111116; }
+.scene { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+.scene.visible { opacity: 1; }
+.screen-view-wrap { position: absolute; left: 50%; top: 22%; transform: translateX(-50%); width: 960px; height: 540px; background: #0a0a0f; border: 2px solid #f46aa3; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.game-canvas { width: 100%; height: 100%; background: radial-gradient(ellipse at 60% 50%, #533548 0, #27232e 40%, #111116 80%); position: relative; }
+.reticle { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font: 30px var(--mono); color: #ffffffb3; user-select: none; }
+.map-badge { position: absolute; top: 16px; left: 16px; font: 13px var(--mono); color: #dfd2dc; letter-spacing: 0.08em; background: #141219; padding: 4px 8px; border-radius: 4px; border: 1px solid #393640; }
+.hud { position: absolute; top: 16px; right: 16px; font: 13px var(--mono); color: #ece8ef; letter-spacing: 0.05em; }
+.hud b { color: #f46aa3; padding: 0 6px; }
+.caption { position: absolute; bottom: 18px; left: 16px; font: 14px var(--mono); color: #e7dfe4; letter-spacing: 0.06em; }
+.ctrls { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 14px; }
+.title { font: 800 clamp(48px, 12vw, 110px) var(--display); letter-spacing: 0.04em; text-align: center; color: #f3f0f3; }
+.title .live { color: #f46aa3; }
+.tagline { font: 600 26px var(--display); letter-spacing: 0.02em; text-align: center; color: #aaa6b1; margin-top: 14px; }
+.sub { font: 15px var(--mono); text-align: center; color: #77737e; margin-top: 10px; letter-spacing: 0.08em; }
+.centered { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); text-align: center; width: 100%; }
+.cta { font: 700 30px var(--display); letter-spacing: 0.03em; text-align: center; color: #f46aa3; margin-top: 18px; }
+.post { font: 15px var(--mono); text-align: center; color: #aaa6b1; margin-top: 8px; letter-spacing: 0.05em; }
+.hidden { display: none !important; }
+button { font: inherit; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <!-- Scene 1: Hook -->
+  <div id="s1" class="scene">
+    <div class="centered">
+      <div class="title">LOREKEEPER <span class="live">LIVE</span></div>
+      <div class="tagline" id="tagline">Read the screen.</div>
+      <div class="sub" id="sub">Save the moment. Build the channel's lore.</div>
+    </div>
+  </div>
+
+  <!-- Scene 2: Screen share + capture -->
+  <div id="s2" class="scene">
+    <div class="screen-view-wrap">
+      <div class="game-canvas">
+        <canvas id="game" width="960" height="540"></canvas>
+        <div class="reticle" id="reticle">+</div>
+        <div class="map-badge" id="mapBadge">WATCHPOINT: GIBRALTAR</div>
+        <div class="hud"><span>TEAM 1</span> <b>VS</b> <span>TEAM 2</span></div>
+        <div class="caption" id="cap1">THE LORE IS LOADING...</div>
+        <div class="caption" id="cap2" style="opacity:0;">SHARE A WINDOW · LOCAL ONLY</div>
+      </div>
+    </div>
+    <div class="ctrls" id="ctrls" style="opacity:0;">
+      <button id="btnShare" style="padding:10px 18px;border:1px solid #3a3742;border-radius:6px;background:#111116;color:#f3f0f3;font:600 14px var(--display);">Share a window</button>
+      <button id="btnCap" style="padding:10px 18px;border:1px solid #80536d;border-radius:6px;background:#312632;color:#ffd2e3;font:600 14px var(--display);">Capture moment</button>
+    </div>
+    <div class="sub" id="s2sub" style="position:absolute;bottom:60px;left:50%;transform:translateX(-50%);opacity:0;">A captured frame lands in the local review queue.</div>
+  </div>
+
+  <!-- Scene 3: Editor + archive -->
+  <div id="s3" class="scene">
+    <div style="position:absolute;left:8%;top:12%;width:460px;">
+      <div class="eyebrow" style="margin-bottom:10px;">MOMENT REVIEW · LOCAL SCREEN CAPTURE</div>
+      <div class="title" style="font-size:42px;line-height:1.05;">Bronze Doomfist:</div>
+      <div class="title" style="font-size:42px;line-height:1.05;margin-top:-10px;"><span class="live">the Spectate That Hit 1.77M</span></div>
+      <div class="tagline" style="margin-top:14px;">Add the context yourself — hero, map, tags, source.</div>
+      <div class="ctrls" style="margin-top:22px;gap:12px;">
+        <button id="btnEditor" style="padding:10px 20px;border:1px solid #713b56;border-radius:6px;background:#713b56;color:#ffe6ef;font:600 15px var(--display);">Open editor</button>
+      </div>
+    </div>
+    <div style="position:absolute;right:8%;top:26%;width:520px;height:360px;background:#202027;border:1px solid #302f39;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="padding:14px 16px;border-bottom:1px solid #302f39;font:600 16px var(--display);color:#f3f0f3;">Make this moment canon</div>
+      <div style="flex:1;padding:16px;overflow:auto;display:flex;flex-direction:column;gap:12px;" id="editorFields">
+        <div style="font:12px var(--mono);color:#85818d;">Card title</div>
+        <div id="fTitle" style="font:600 18px var(--display);color:#f3f0f3;background:#111116;padding:10px 12px;border-radius:4px;border:1px solid #3a3742;"></div>
+        <div style="font:12px var(--mono);color:#85818d;">Hero · Map · Tags</div>
+        <div id="fMeta" style="font:14px var(--mono);color:#aaa6b1;background:#111116;padding:10px 12px;border-radius:4px;border:1px solid #3a3742;"></div>
+        <div style="font:12px var(--mono);color:#85818d;">Public source URL</div>
+        <div id="fClip" style="font:13px var(--mono);color:#f09bbd;background:#111116;padding:10px 12px;border-radius:4px;border:1px solid #3a3742;"></div>
+      </div>
+      <div style="padding:12px 16px;border-top:1px solid #302f39;display:flex;gap:10px;">
+        <button id="btnSave" style="flex:1;padding:10px;border:1px solid #a45276;border-radius:6px;background:#713b56;color:#ffe6ef;font:600 14px var(--display);">Save &amp; show on stream</button>
+      </div>
+    </div>
+    <div class="sub" id="s3sub" style="position:absolute;left:8%;bottom:10%;width:460px;font:14px var(--mono);color:#77737e;line-height:1.5;">Saved to the archive — featured on the OBS overlay.</div>
+  </div>
+
+  <!-- Scene 4: Overlay card -->
+  <div id="s4" class="scene">
+    <div class="overlay-page" style="position:absolute;inset:0;background:transparent;display:flex;align-items:flex-end;justify-content:flex-start;padding:60px 80px;">
+      <div id="oc" class="overlay-card" style="width:min(430px,42vw);padding:17px 20px 15px;background:linear-gradient(120deg,#16131bea,#21151ee8);border:1px solid #f27eaa;border-left:4px solid #f46aa3;border-radius:7px;box-shadow:0 8px 35px #0006,0 0 24px #f46aa32a;opacity:0;transform:translateY(24px);font-family:var(--body);color:#fff;">
+        <div class="overlay-card-top"><span class="overlay-brand"><span>✦</span> CHANNEL LORE</span><span class="overlay-live-dot"></span></div>
+        <div class="overlay-tag" id="otag">SPECTATOR STORY</div>
+        <h1 id="otitle">Bronze Doomfist: the Spectate That Hit 1.77M</h1>
+        <p id="odesc">A highly viewed Flats Overwatch upload follows a Bronze spectate and frames the player as “the best Doomfist.”</p>
+        <img id="osnap" class="overlay-snapshot" src="" alt="Captured gameplay frame" style="width:100%;max-height:150px;object-fit:cover;border-radius:4px;margin-top:10px;display:none;">
+        <div class="overlay-meta" id="ometa"><span id="octx">DOOMFIST · WATCHPOINT: GIBRALTAR</span><span id="oorg">SCREEN CAPTURE</span></div>
+      </div>
+    </div>
+    <div class="sub" id="s4sub" style="position:absolute;left:80px;bottom:60px;font:14px var(--mono);color:#77737e;">Featured card appears on the OBS browser source.</div>
+  </div>
+
+  <!-- Scene 5: Outro -->
+  <div id="s5" class="scene">
+    <div class="centered">
+      <div class="title">Lorekeeper Live</div>
+      <div class="tagline" style="color:#f46aa3;">Screen-only lore cards for your stream.</div>
+      <div class="cta" id="cta">npm start</div>
+      <div class="post" id="post">localhost:8000 · no Twitch login · nothing uploaded</div>
+    </div>
+  </div>
+</div>
+<script>
+(() => {
+  const stage = document.getElementById('stage');
+  const scenes = ['s1','s2','s3','s4','s5'].map(id => document.getElementById(id));
+  function show(id, t, a, b) { // fade in [a,a+0.6], hold, fade out [b-0.6,b]
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (t < a) { el.classList.remove('visible'); el.style.opacity = 0; return; }
+    if (t >= b) { el.classList.remove('visible'); el.style.opacity = 0; return; }
+    let o = 1;
+    if (t < a + 0.7) o = (t - a) / 0.7;
+    if (t > b - 0.7) o = (b - t) / 0.7;
+    el.classList.add('visible');
+    el.style.opacity = Math.max(0, Math.min(1, o)).toString();
+  }
+  function fade(elId, t, onFrom, onTo, offFrom, offTo) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    let o = 0;
+    if (t >= onFrom && t < onTo) o = (t - onFrom) / Math.max(0.01, onTo - onFrom);
+    if (t >= offFrom && t < offTo) o = (offTo - t) / Math.max(0.01, offTo - offFrom);
+    if (t >= onTo && t < offFrom) o = 1;
+    el.style.opacity = o.toString();
+  }
+
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  function drawGame() {
+    const w = canvas.width, h = canvas.height;
+    // sky / floor
+    const grad = ctx.createLinearGradient(0,0,0,h);
+    grad.addColorStop(0, '#231f2a');
+    grad.addColorStop(1, '#111116');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,w,h);
+    // distant structure
+    ctx.fillStyle = '#2a2630';
+    ctx.fillRect(0, h*0.55, w, h*0.35);
+    ctx.fillStyle = '#3a3440';
+    ctx.fillRect(w*0.4, h*0.32, w*0.2, h*0.23);
+    // payload-ish glow
+    const g2 = ctx.createRadialGradient(w*0.5, h*0.42, 20, w*0.5, h*0.42, 120);
+    g2.addColorStop(0, '#f46aa333');
+    g2.addColorStop(1, 'transparent');
+    ctx.fillStyle = g2; ctx.fillRect(0,0,w,h);
+    // reticle ring
+    ctx.strokeStyle = '#ffffffb3'; ctx.lineWidth = 3; ctx.beginPath();
+    ctx.arc(w/2, h/2, 70, 0, Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(w/2, h/2, 7, 0, Math.PI*2); ctx.fillStyle='#ffffffb3'; ctx.fill();
+  }
+  drawGame();
+
+  const tParam = new URLSearchParams(location.search).get('t');
+  const t = tParam ? parseFloat(tParam) : 0;
+
+  // --- Scene timing ---
+  // S1 hook: 0-3
+  show('s1', t, 0, 3);
+  // S2 screen: 3-7
+  show('s2', t, 3, 7);
+  // S3 editor: 7-12
+  show('s3', t, 7, 12);
+  // S4 overlay: 12-16
+  show('s4', t, 12, 16);
+  // S5 outro: 16-20
+  show('s5', t, 16, 20);
+
+  // Hook text build
+  const tagline = document.getElementById('tagline');
+  const sub = document.getElementById('sub');
+  if (t < 3) {
+    const tl = ['Read the screen.', 'Save the moment.', 'Build the channel\u2019s lore.'][Math.min(2, Math.floor(t * 1.6))];
+    tagline.textContent = tl;
+    sub.style.opacity = t > 0.7 ? Math.min(1, (t-0.7)/0.6) : 0;
+  }
+
+  // S2: screen share sequence
+  if (t >= 3 && t < 7) {
+    const u = t - 3; // 0..4
+    // reticle pulse
+    const ret = document.getElementById('reticle');
+    ret.style.opacity = 0.5 + 0.5 * Math.sin(u * 6);
+    // connect
+    fade('btnShare', t, 3.0, 3.6, 4.4, 5.0);
+    fade('cap1', t, 3.2, 3.8, 4.0, 4.6);
+    fade('cap2', t, 4.6, 5.2, 5.8, 6.4);
+    // capture button appears
+    const btnCap = document.getElementById('btnCap');
+    btnCap.style.opacity = u > 4.6 ? Math.min(1, (u-4.6)/0.5) : 0;
+    // snapshot flies to queue: hint
+    const s2sub = document.getElementById('s2sub');
+    s2sub.style.opacity = u > 5.2 ? Math.min(1, (u-5.2)/0.6) : 0;
+  }
+
+  // S3: editor fields fill in one by one
+  if (t >= 7 && t < 12) {
+    const u = t - 7; // 0..5
+    const fTitle = document.getElementById('fTitle');
+    const fMeta = document.getElementById('fMeta');
+    const fClip = document.getElementById('fClip');
+    const btnEditor = document.getElementById('btnEditor');
+    const btnSave = document.getElementById('btnSave');
+    fade('btnEditor', t, 7.0, 7.6, 8.2, 8.8);
+    fTitle.style.opacity = u > 1.0 ? Math.min(1,(u-1.0)/0.5) : 0;
+    fTitle.textContent = u > 1.0 ? 'Bronze Doomfist: the Spectate That Hit 1.77M' : '';
+    fMeta.style.opacity = u > 1.8 ? Math.min(1,(u-1.8)/0.5) : 0;
+    fMeta.textContent = u > 1.8 ? 'DOOMFIST · WATCHPOINT: GIBRALTAR · SPECTATOR STORY, PUBLIC SOURCE' : '';
+    fClip.style.opacity = u > 2.6 ? Math.min(1,(u-2.6)/0.5) : 0;
+    fClip.textContent = u > 2.6 ? 'https://youtube.com/watch?v=zKbeWzSP3N8' : '';
+    btnSave.style.opacity = u > 3.4 ? Math.min(1,(u-3.4)/0.5) : 0;
+    document.getElementById('s3sub').style.opacity = u > 4.2 ? Math.min(1,(u-4.2)/0.6) : 0;
+  }
+
+  // S4: overlay card slides up, snapshot appears
+  if (t >= 12 && t < 16) {
+    const u = t - 12; // 0..4
+    const oc = document.getElementById('oc');
+    const y = u < 1.0 ? (24 - u * 24) : 0;
+    oc.style.opacity = u < 1.0 ? u : 1;
+    oc.style.transform = `translateY(${y}px)`;
+    const osnap = document.getElementById('osnap');
+    if (u > 1.4) { osnap.style.display = 'block'; osnap.src = canvas.toDataURL('image/jpeg', 0.85); osnap.style.opacity = Math.min(1, (u-1.4)/0.5); }
+  }
+
+  // S5: outro
+  if (t >= 16 && t < 20) {
+    const u = t - 16;
+    document.getElementById('cta').style.opacity = u > 0.4 ? Math.min(1,(u-0.4)/0.5) : 0;
+    document.getElementById('post').style.opacity = u > 1.0 ? Math.min(1,(u-1.0)/0.6) : 0;
+  }
+})();
+</script>
+</body>
+</html>`;
+
+fs.writeFileSync(`${WORK}\\video.html`, HTML);
+console.log('wrote video.html');
